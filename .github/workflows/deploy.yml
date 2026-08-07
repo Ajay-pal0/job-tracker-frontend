@@ -22,7 +22,7 @@ jobs:
         with:
           node-version: 22
           cache: 'npm'
-          cache-dependency-path: 'job-tracker-frontend/package-lock.json'
+          cache-dependency-path: './job-tracker-frontend/package-lock.json'
 
       - name: Install Dependencies
         # Added working-directory to navigate into your frontend folder
