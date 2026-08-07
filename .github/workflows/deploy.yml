@@ -32,7 +32,7 @@ jobs:
         # This injects your GitHub secret into the Vite build environment
         env:
           VITE_API_URL: ${{ secrets.VITE_API_URL }}
-          
+
         run: npm run build
 
       - name: Deploy to Cloudflare Pages
@@ -41,4 +41,4 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           # Path updated to point to the build folder inside your subfolder
-          command: pages deploy dist --project-name="job-tracker" --branch=main
+          command: pages deploy dist --project-name="jobtracker" --branch=main
