@@ -20,9 +20,9 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: latest
+          node-version: 24
           cache: 'npm'
-          cache-dependency-path: './job-tracker-frontend/package-lock.json'
+          cache-dependency-path: 'package-lock.json'
 
       - name: Install Dependencies
         # Added working-directory to navigate into your frontend folder
@@ -42,4 +42,4 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           # Path updated to point to the build folder inside your subfolder
-          command: pages deploy job-tracker-frontend/dist --project-name="job-tracker" --branch=main
+          command: pages deploy dist --project-name="job-tracker" --branch=main
