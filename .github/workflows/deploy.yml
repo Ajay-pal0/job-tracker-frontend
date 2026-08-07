@@ -1,4 +1,4 @@
-name: Deploy Frontend to GitHub Pages
+name: Deploy to Cloudflare Pages
 
 on:
   push:
@@ -6,7 +6,8 @@ on:
       - main
 
 permissions:
-  contents: write
+  contents: read
+  deployments: write
 
 jobs:
   build-and-deploy:
@@ -24,15 +25,21 @@ jobs:
           cache-dependency-path: 'frontend/package-lock.json'
 
       - name: Install Dependencies
+        # Added working-directory to navigate into your frontend folder
+        working-directory: frontend
         run: npm ci
 
-      - name: Build Application for GitHub Pages
+      - name: Build Application
+        # This injects your GitHub secret into the Vite build environment
         env:
           VITE_API_URL: ${{ secrets.VITE_API_URL }}
+        working-directory: frontend
         run: npm run build
 
-      - name: Deploy to GitHub Pages
-        uses: JamesIves/github-pages-deploy-action@v4
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
         with:
-          folder: dist
-          branch: gh-pages
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          # Path updated to point to the build folder inside your subfolder
+          command: pages deploy frontend/dist --project-name="your-cloudflare-project-name"
