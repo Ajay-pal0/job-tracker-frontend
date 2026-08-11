@@ -4,6 +4,7 @@ import type { Application, ApplicationStatus } from '../types';
 
 interface KanbanViewProps {
   applications: Application[];
+  loading?: boolean;
   onEdit: (app: Application) => void;
   onDelete: (id: number) => void;
   onStatusChange: (id: number, newStatus: ApplicationStatus) => void;
@@ -20,12 +21,49 @@ const KANBAN_COLUMNS: { status: ApplicationStatus; label: string; dotColor: stri
 
 export const KanbanView: React.FC<KanbanViewProps> = ({
   applications,
+  loading,
   onEdit,
   onDelete,
   onStatusChange,
 }) => {
   const [draggedAppId, setDraggedAppId] = useState<number | null>(null);
   const [activeMobileTab, setActiveMobileTab] = useState<string>('All');
+
+  if (loading) {
+    return (
+      <div className="space-y-4 mb-6">
+        <div className="overflow-x-auto pb-4">
+          <div className="flex gap-4 min-w-[1200px]">
+            {KANBAN_COLUMNS.map((col) => (
+              <div
+                key={col.status}
+                className="w-[280px] bg-[#F1F5F9]/70 rounded-2xl p-3 border border-[#E2E8F0] flex flex-col shrink-0 min-h-[440px] space-y-3 animate-pulse"
+              >
+                <div className="flex items-center justify-between pb-3 border-b border-[#E2E8F0] px-1">
+                  <div className="flex items-center space-x-2">
+                    <span className={`w-2.5 h-2.5 rounded-full ${col.dotColor}`}></span>
+                    <div className="h-4 w-24 bg-slate-200 rounded-md"></div>
+                  </div>
+                  <div className="h-5 w-6 bg-slate-200 rounded-full"></div>
+                </div>
+
+                {[1, 2].map((n) => (
+                  <div key={n} className="bg-white rounded-xl p-3.5 border border-[#E2E8F0] space-y-2.5 shadow-2xs">
+                    <div className="h-4 w-3/4 bg-slate-200 rounded-md"></div>
+                    <div className="h-3 w-1/2 bg-slate-200 rounded-md"></div>
+                    <div className="flex justify-between items-center pt-2 border-t border-slate-100">
+                      <div className="h-4 w-16 bg-slate-200 rounded-md"></div>
+                      <div className="h-4 w-12 bg-slate-200 rounded-md"></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const handleDragStart = (e: React.DragEvent, id: number) => {
     setDraggedAppId(id);

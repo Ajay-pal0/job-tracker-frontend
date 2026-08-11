@@ -10,8 +10,33 @@ interface AnalyticsViewProps {
 export const AnalyticsView: React.FC<AnalyticsViewProps> = ({ analytics, loading }) => {
   if (loading) {
     return (
-      <div className="bg-white rounded-2xl p-8 sm:p-12 text-center border border-[#E2E8F0] shadow-[0_1px_2px_rgba(0,0,0,0.05)] my-6">
-        <p className="text-xs font-semibold text-[#64748B]">Loading analytics dashboard...</p>
+      <div className="space-y-6 mb-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {[1, 2].map((card) => (
+            <div key={card} className="bg-white rounded-2xl p-6 border border-[#E2E8F0] shadow-2xs space-y-4 animate-pulse">
+              <div className="flex justify-between items-center pb-2">
+                <div className="h-5 w-48 bg-slate-200 rounded-md"></div>
+                <div className="h-4 w-16 bg-slate-200 rounded-md"></div>
+              </div>
+              <div className="space-y-3">
+                {[1, 2, 3, 4].map((item) => (
+                  <div key={item} className="space-y-1.5">
+                    <div className="flex justify-between">
+                      <div className="h-4 w-24 bg-slate-200 rounded-md"></div>
+                      <div className="h-4 w-12 bg-slate-200 rounded-md"></div>
+                    </div>
+                    <div className="w-full h-3 bg-slate-100 rounded-full"></div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="bg-white rounded-2xl p-6 border border-[#E2E8F0] shadow-2xs space-y-4 animate-pulse">
+          <div className="h-5 w-44 bg-slate-200 rounded-md"></div>
+          <div className="h-40 bg-slate-100 rounded-xl"></div>
+        </div>
       </div>
     );
   }

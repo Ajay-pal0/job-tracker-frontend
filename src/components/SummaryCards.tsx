@@ -53,9 +53,13 @@ export const SummaryCards: React.FC<SummaryCardsProps> = ({ summary, loading }) 
                 {card.title}
               </p>
               <div className="flex items-baseline space-x-2">
-                <span className="text-[24px] font-bold text-[#0F172A] leading-tight tracking-tight">
-                  {loading ? '...' : card.value}
-                </span>
+                {loading ? (
+                  <div className="h-7 w-16 bg-slate-200 rounded-lg animate-pulse my-1"></div>
+                ) : (
+                  <span className="text-[24px] font-bold text-[#0F172A] leading-tight tracking-tight">
+                    {card.value}
+                  </span>
+                )}
               </div>
               <p className="text-xs font-medium text-[#64748B] mt-0.5">
                 {card.subtitle}

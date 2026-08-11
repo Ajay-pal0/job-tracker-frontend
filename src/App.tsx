@@ -35,7 +35,7 @@ const MainTrackerApp: React.FC<{ user: User; onLogout: () => void }> = ({ user, 
   const [editingApp, setEditingApp] = useState<Application | null>(null);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
 
-  const { data: applications = [], refetch: refetchApps } = useQuery({
+  const { data: applications = [], isLoading: isAppsLoading, refetch: refetchApps } = useQuery({
     queryKey: ['applications', selectedStatus, selectedPlatform, search, selectedSort],
     queryFn: () => applicationService.getApplications({
       status: selectedStatus,
@@ -158,6 +158,7 @@ const MainTrackerApp: React.FC<{ user: User; onLogout: () => void }> = ({ user, 
         {currentView === 'grid' && (
           <GridView
             applications={applications}
+            loading={isAppsLoading}
             onEdit={handleEdit}
             onDelete={handleDelete}
             onStatusChange={handleStatusChange}
@@ -167,6 +168,7 @@ const MainTrackerApp: React.FC<{ user: User; onLogout: () => void }> = ({ user, 
         {currentView === 'kanban' && (
           <KanbanView
             applications={applications}
+            loading={isAppsLoading}
             onEdit={handleEdit}
             onDelete={handleDelete}
             onStatusChange={handleStatusChange}
