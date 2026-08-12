@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { QueryClient, QueryClientProvider, useQuery, useMutation } from '@tanstack/react-query';
+import React from 'react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Header } from './components/Header';
 import { QuickGuideBanner } from './components/QuickGuideBanner';
 import { SummaryCards } from './components/SummaryCards';
@@ -9,10 +9,16 @@ import { KanbanView } from './components/KanbanView';
 import { AnalyticsView } from './components/AnalyticsView';
 import { AddEditModal } from './components/AddEditModal';
 import { ImportModal } from './components/ImportModal';
+import { SetPasswordModal } from './components/SetPasswordModal';
+import { EditProfileModal } from './components/EditProfileModal';
+import { ConfirmDeleteModal } from './components/ConfirmDeleteModal';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
 import { applicationService } from './services/applicationService';
-import type { Application, ApplicationStatus, User } from './types';
+import { useAuth } from './hooks/useAuth';
+import { useApplications } from './hooks/useApplications';
+import { useModals } from './hooks/useModals';
+import type { Application, User } from './types';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -23,104 +29,63 @@ const queryClient = new QueryClient({
   },
 });
 
-const MainTrackerApp: React.FC<{ user: User; onLogout: () => void }> = ({ user, onLogout }) => {
-  const [currentView, setCurrentView] = useState<'grid' | 'kanban' | 'analytics'>('grid');
-  
-  const [search, setSearch] = useState('');
-  const [selectedStatus, setSelectedStatus] = useState('All');
-  const [selectedPlatform, setSelectedPlatform] = useState('All');
-  const [selectedSort, setSelectedSort] = useState('applied_date_asc');
+const MainTrackerApp: React.FC<{ user: User; onLogout: () => void; onRefreshUser: () => void }> = ({ user, onLogout, onRefreshUser }) => {
+  const {
+    currentView,
+    setCurrentView,
+    search,
+    setSearch,
+    selectedStatus,
+    setSelectedStatus,
+    selectedPlatform,
+    setSelectedPlatform,
+    selectedSort,
+    setSelectedSort,
+    applications,
+    summary,
+    analytics,
+    isAppsLoading,
+    isSummaryLoading,
+    isAnalyticsLoading,
+    refreshAllData,
+    createMutation,
+    updateMutation,
+    deleteMutation,
+    handleDelete,
+    handleStatusChange,
+    handleExport,
+    handleDownloadSample,
+  } = useApplications();
 
-  const [isAddEditModalOpen, setIsAddEditModalOpen] = useState(false);
-  const [editingApp, setEditingApp] = useState<Application | null>(null);
-  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
-
-  const { data: applications = [], isLoading: isAppsLoading, refetch: refetchApps } = useQuery({
-    queryKey: ['applications', selectedStatus, selectedPlatform, search, selectedSort],
-    queryFn: () => applicationService.getApplications({
-      status: selectedStatus,
-      platform: selectedPlatform,
-      search,
-      ordering: selectedSort,
-    }),
-  });
-
-  const { data: summary = null, isLoading: isSummaryLoading, refetch: refetchSummary } = useQuery({
-    queryKey: ['dashboardSummary'],
-    queryFn: () => applicationService.getDashboardSummary(),
-  });
-
-  const { data: analytics = null, isLoading: isAnalyticsLoading, refetch: refetchAnalytics } = useQuery({
-    queryKey: ['analyticsData'],
-    queryFn: () => applicationService.getAnalyticsData(),
-  });
-
-  const refreshAllData = () => {
-    refetchApps();
-    refetchSummary();
-    refetchAnalytics();
-  };
-
-  const createMutation = useMutation({
-    mutationFn: (data: Partial<Application>) => applicationService.createApplication(data),
-    onSuccess: () => {
-      refreshAllData();
-      setIsAddEditModalOpen(false);
-      setEditingApp(null);
-    },
-  });
-
-  const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: Partial<Application> }) =>
-      applicationService.updateApplication(id, data),
-    onSuccess: () => {
-      refreshAllData();
-      setIsAddEditModalOpen(false);
-      setEditingApp(null);
-    },
-  });
-
-  const deleteMutation = useMutation({
-    mutationFn: (id: number) => applicationService.deleteApplication(id),
-    onSuccess: () => {
-      refreshAllData();
-    },
-  });
-
-  const handleOpenAdd = () => {
-    setEditingApp(null);
-    setIsAddEditModalOpen(true);
-  };
-
-  const handleEdit = (app: Application) => {
-    setEditingApp(app);
-    setIsAddEditModalOpen(true);
-  };
-
-  const handleDelete = (id: number) => {
-    if (window.confirm('Are you sure you want to delete this job application record?')) {
-      deleteMutation.mutate(id);
-    }
-  };
-
-  const handleStatusChange = (id: number, newStatus: ApplicationStatus) => {
-    updateMutation.mutate({ id, data: { status: newStatus } });
-  };
+  const {
+    isAddEditModalOpen,
+    editingApp,
+    deletingApp,
+    isImportModalOpen,
+    isSetPasswordModalOpen,
+    isEditProfileModalOpen,
+    openAddModal,
+    openEditModal,
+    closeAddEditModal,
+    openDeleteModal,
+    closeDeleteModal,
+    openImportModal,
+    closeImportModal,
+    openSetPasswordModal,
+    closeSetPasswordModal,
+    openEditProfileModal,
+    closeEditProfileModal,
+  } = useModals();
 
   const handleAddEditSubmit = (data: Partial<Application>) => {
     if (editingApp) {
-      updateMutation.mutate({ id: editingApp.id, data });
+      updateMutation.mutate(
+        { id: editingApp.id, data },
+        { onSuccess: closeAddEditModal }
+      );
     } else {
-      createMutation.mutate(data);
+      createMutation.mutate(data, { onSuccess: closeAddEditModal });
     }
-  };
-
-  const handleExport = () => {
-    applicationService.exportApplications();
-  };
-
-  const handleDownloadSample = () => {
-    applicationService.downloadSampleTemplate();
   };
 
   return (
@@ -129,11 +94,13 @@ const MainTrackerApp: React.FC<{ user: User; onLogout: () => void }> = ({ user, 
       <Header
         currentView={currentView}
         onViewChange={setCurrentView}
-        onOpenAddModal={handleOpenAdd}
-        onOpenImportModal={() => setIsImportModalOpen(true)}
+        onOpenAddModal={openAddModal}
+        onOpenImportModal={openImportModal}
         onExport={handleExport}
         user={user}
         onLogout={onLogout}
+        onOpenSetPasswordModal={openSetPasswordModal}
+        onOpenEditProfileModal={openEditProfileModal}
       />
 
       <main className="w-full max-w-[1720px] mx-auto px-3 sm:px-6 lg:px-8 py-6">
@@ -151,7 +118,7 @@ const MainTrackerApp: React.FC<{ user: User; onLogout: () => void }> = ({ user, 
           onPlatformChange={setSelectedPlatform}
           selectedSort={selectedSort}
           onSortChange={setSelectedSort}
-          onImportClick={() => setIsImportModalOpen(true)}
+          onImportClick={openImportModal}
           onExportClick={handleExport}
         />
 
@@ -159,8 +126,11 @@ const MainTrackerApp: React.FC<{ user: User; onLogout: () => void }> = ({ user, 
           <GridView
             applications={applications}
             loading={isAppsLoading}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
+            onEdit={openEditModal}
+            onDelete={(id) => {
+              const target = applications.find((a) => a.id === id);
+              if (target) openDeleteModal(target);
+            }}
             onStatusChange={handleStatusChange}
           />
         )}
@@ -169,8 +139,11 @@ const MainTrackerApp: React.FC<{ user: User; onLogout: () => void }> = ({ user, 
           <KanbanView
             applications={applications}
             loading={isAppsLoading}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
+            onEdit={openEditModal}
+            onDelete={(id) => {
+              const target = applications.find((a) => a.id === id);
+              if (target) openDeleteModal(target);
+            }}
             onStatusChange={handleStatusChange}
           />
         )}
@@ -183,7 +156,7 @@ const MainTrackerApp: React.FC<{ user: User; onLogout: () => void }> = ({ user, 
 
       <AddEditModal
         isOpen={isAddEditModalOpen}
-        onClose={() => setIsAddEditModalOpen(false)}
+        onClose={closeAddEditModal}
         onSubmit={handleAddEditSubmit}
         initialData={editingApp}
         loading={createMutation.isPending || updateMutation.isPending}
@@ -191,10 +164,36 @@ const MainTrackerApp: React.FC<{ user: User; onLogout: () => void }> = ({ user, 
 
       <ImportModal
         isOpen={isImportModalOpen}
-        onClose={() => setIsImportModalOpen(false)}
+        onClose={closeImportModal}
         onImport={(file, duplicateAction) => applicationService.importApplications(file, duplicateAction)}
         onDownloadSample={handleDownloadSample}
         onSuccessRefresh={refreshAllData}
+      />
+
+      <SetPasswordModal
+        isOpen={isSetPasswordModalOpen}
+        user={user}
+        onClose={closeSetPasswordModal}
+        onSuccess={onRefreshUser}
+      />
+
+      <EditProfileModal
+        isOpen={isEditProfileModalOpen}
+        user={user}
+        onClose={closeEditProfileModal}
+        onSuccess={onRefreshUser}
+      />
+
+      <ConfirmDeleteModal
+        isOpen={!!deletingApp}
+        application={deletingApp}
+        loading={deleteMutation.isPending}
+        onClose={closeDeleteModal}
+        onConfirm={() => {
+          if (deletingApp) {
+            handleDelete(deletingApp.id, closeDeleteModal);
+          }
+        }}
       />
 
     </div>
@@ -202,42 +201,16 @@ const MainTrackerApp: React.FC<{ user: User; onLogout: () => void }> = ({ user, 
 };
 
 export default function App() {
-  const [authPage, setAuthPage] = useState<'login' | 'register'>('login');
-  const [user, setUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(localStorage.getItem('access_token'));
-  const [checkingAuth, setCheckingAuth] = useState(true);
-
-  useEffect(() => {
-    const initAuth = async () => {
-      const storedToken = localStorage.getItem('access_token');
-      if (storedToken) {
-        try {
-          const profile = await applicationService.getProfile();
-          setUser(profile);
-          setToken(storedToken);
-        } catch (e) {
-          localStorage.removeItem('access_token');
-          localStorage.removeItem('refresh_token');
-          setToken(null);
-          setUser(null);
-        }
-      }
-      setCheckingAuth(false);
-    };
-    initAuth();
-  }, []);
-
-  const handleLoginSuccess = (newToken: string, newUser: User) => {
-    setToken(newToken);
-    setUser(newUser);
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('refresh_token');
-    setToken(null);
-    setUser(null);
-  };
+  const {
+    user,
+    token,
+    checkingAuth,
+    authPage,
+    setAuthPage,
+    handleLoginSuccess,
+    handleLogout,
+    fetchUserProfile,
+  } = useAuth();
 
   if (checkingAuth) {
     return (
@@ -263,7 +236,7 @@ export default function App() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <MainTrackerApp user={user} onLogout={handleLogout} />
+      <MainTrackerApp user={user} onLogout={handleLogout} onRefreshUser={fetchUserProfile} />
     </QueryClientProvider>
   );
 }

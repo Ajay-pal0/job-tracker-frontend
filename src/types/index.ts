@@ -84,7 +84,9 @@ export interface User {
   email: string;
   first_name?: string;
   last_name?: string;
+  has_password?: boolean;
 }
+
 
 export interface AuthState {
   user: User | null;

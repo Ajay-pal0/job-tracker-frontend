@@ -101,4 +101,35 @@ export const applicationService = {
     const response = await api.get('/accounts/profile/');
     return response.data;
   },
+
+  async updateProfile(data: Partial<User>): Promise<User> {
+    const response = await api.patch('/accounts/profile/', data);
+    return response.data;
+  },
+
+  async ssoLogin(provider: string, token: string) {
+    const response = await api.post(`/accounts/sso/${provider}/`, { token });
+    return response.data;
+  },
+
+  async googleLogin(idToken: string) {
+    const response = await api.post('/accounts/google/', { id_token: idToken });
+    return response.data;
+  },
+
+  async setPassword(data: { old_password?: string; new_password: string; confirm_password: string }) {
+    const response = await api.post('/accounts/set-password/', data);
+    return response.data;
+  },
+
+  async forgotPassword(email: string) {
+    const response = await api.post('/accounts/forgot-password/', { email });
+    return response.data;
+  },
+
+  async resetPassword(data: { uidb64: string; token: string; new_password: string; confirm_password: string }) {
+    const response = await api.post('/accounts/reset-password/', data);
+    return response.data;
+  },
 };
+
