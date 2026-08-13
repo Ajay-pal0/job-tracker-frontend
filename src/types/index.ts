@@ -93,3 +93,62 @@ export interface AuthState {
   token: string | null;
   isAuthenticated: boolean;
 }
+
+export interface GmailStatusResponse {
+  connected: boolean;
+  email_address?: string;
+  last_synced_at?: string;
+  created_at?: string;
+  message?: string;
+}
+
+export interface GmailSyncResponse {
+  message: string;
+  details: {
+    scanned_emails_count: number;
+    created_count: number;
+    updated_count: number;
+    skipped_count: number;
+    processed_applications: Array<{
+      id: string;
+      company_name: string;
+      job_title: string;
+      status: string;
+    }>;
+  };
+}
+export interface EmailMessageItem {
+  id: number;
+  gmail_message_id: string;
+  gmail_thread_id: string;
+  sender_name: string;
+  sender_email: string;
+  subject: string;
+  received_at: string;
+  body_text: string;
+  snippet: string;
+  is_job_related: boolean;
+  extracted_company_name: string;
+  extracted_job_title: string;
+  extracted_status: ApplicationStatus;
+  extracted_platform: Platform;
+  extracted_recruiter_name: string;
+  extracted_recruiter_email: string;
+  confidence_score: number;
+  processing_status: 'PENDING' | 'PENDING_REVIEW' | 'PROCESSING' | 'PROCESSED' | 'FAILED' | 'IGNORED';
+  processed_at?: string;
+  created_at: string;
+  has_linked_application?: boolean;
+  gmail_url?: string;
+}
+
+export interface EmailMessageListResponse {
+  count: number;
+  total_pages: number;
+  current_page: number;
+  page_size: number;
+  pending_review_count: number;
+  processed_count: number;
+  ignored_count: number;
+  messages: EmailMessageItem[];
+}

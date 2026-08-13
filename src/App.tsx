@@ -12,6 +12,8 @@ import { ImportModal } from './components/ImportModal';
 import { SetPasswordModal } from './components/SetPasswordModal';
 import { EditProfileModal } from './components/EditProfileModal';
 import { ConfirmDeleteModal } from './components/ConfirmDeleteModal';
+import { GmailModal } from './components/GmailModal';
+import { EmailReviewModal } from './components/EmailReviewModal';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
 import { applicationService } from './services/applicationService';
@@ -64,6 +66,8 @@ const MainTrackerApp: React.FC<{ user: User; onLogout: () => void; onRefreshUser
     isImportModalOpen,
     isSetPasswordModalOpen,
     isEditProfileModalOpen,
+    isGmailModalOpen,
+    isReviewModalOpen,
     openAddModal,
     openEditModal,
     closeAddEditModal,
@@ -75,7 +79,45 @@ const MainTrackerApp: React.FC<{ user: User; onLogout: () => void; onRefreshUser
     closeSetPasswordModal,
     openEditProfileModal,
     closeEditProfileModal,
+    openGmailModal,
+    closeGmailModal,
+    openReviewModal,
+    closeReviewModal,
   } = useModals();
+
+  const [pendingReviewCount, setPendingReviewCount] = React.useState(0);
+
+  const fetchPendingCount = React.useCallback(() => {
+    applicationService.getGmailMessages({ status: 'PENDING_REVIEW' })
+      .then((res) => setPendingReviewCount(res.pending_review_count || 0))
+      .catch(() => setPendingReviewCount(0));
+  }, []);
+
+  React.useEffect(() => {
+    fetchPendingCount();
+  }, [fetchPendingCount]);
+
+  const handleGlobalRefresh = React.useCallback(() => {
+    refreshAllData();
+    fetchPendingCount();
+  }, [refreshAllData, fetchPendingCount]);
+
+  React.useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const code = urlParams.get('code');
+    if (code) {
+      const redirectUri = window.location.origin;
+      applicationService.connectGmail({ code, redirect_uri: redirectUri })
+        .then(() => {
+          window.history.replaceState({}, document.title, window.location.pathname);
+          openGmailModal();
+          handleGlobalRefresh();
+        })
+        .catch((err) => {
+          console.error('Failed to exchange Google OAuth code', err);
+        });
+    }
+  }, [openGmailModal, handleGlobalRefresh]);
 
   const handleAddEditSubmit = (data: Partial<Application>) => {
     if (editingApp) {
@@ -89,7 +131,7 @@ const MainTrackerApp: React.FC<{ user: User; onLogout: () => void; onRefreshUser
   };
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] text-[#1E293B] font-sans">
+    <div className="h-screen w-full overflow-hidden bg-[#F8FAFC] text-[#1E293B] font-sans flex flex-col">
       
       <Header
         currentView={currentView}
@@ -101,56 +143,65 @@ const MainTrackerApp: React.FC<{ user: User; onLogout: () => void; onRefreshUser
         onLogout={onLogout}
         onOpenSetPasswordModal={openSetPasswordModal}
         onOpenEditProfileModal={openEditProfileModal}
+        onOpenGmailModal={openGmailModal}
+        onOpenReviewModal={openReviewModal}
+        pendingReviewCount={pendingReviewCount}
       />
 
-      <main className="w-full max-w-[1720px] mx-auto px-3 sm:px-6 lg:px-8 py-6">
+      <main className="flex-1 w-full max-w-[1720px] mx-auto px-3 sm:px-6 lg:px-8 py-3 sm:py-4 flex flex-col min-h-0 overflow-y-auto md:overflow-hidden">
         
-        <QuickGuideBanner />
-
-        <SummaryCards summary={summary} loading={isSummaryLoading} />
-
-        <FilterBar
-          search={search}
-          onSearchChange={setSearch}
-          selectedStatus={selectedStatus}
-          onStatusChange={setSelectedStatus}
-          selectedPlatform={selectedPlatform}
-          onPlatformChange={setSelectedPlatform}
-          selectedSort={selectedSort}
-          onSortChange={setSelectedSort}
-          onImportClick={openImportModal}
-          onExportClick={handleExport}
-        />
-
-        {currentView === 'grid' && (
-          <GridView
-            applications={applications}
-            loading={isAppsLoading}
-            onEdit={openEditModal}
-            onDelete={(id) => {
-              const target = applications.find((a) => a.id === id);
-              if (target) openDeleteModal(target);
-            }}
-            onStatusChange={handleStatusChange}
+        {/* Top Controls */}
+        <div className="shrink-0 space-y-3 mb-3">
+          <QuickGuideBanner />
+          <SummaryCards summary={summary} loading={isSummaryLoading} />
+          <FilterBar
+            search={search}
+            onSearchChange={setSearch}
+            selectedStatus={selectedStatus}
+            onStatusChange={setSelectedStatus}
+            selectedPlatform={selectedPlatform}
+            onPlatformChange={setSelectedPlatform}
+            selectedSort={selectedSort}
+            onSortChange={setSelectedSort}
+            onImportClick={openImportModal}
+            onExportClick={handleExport}
           />
-        )}
+        </div>
 
-        {currentView === 'kanban' && (
-          <KanbanView
-            applications={applications}
-            loading={isAppsLoading}
-            onEdit={openEditModal}
-            onDelete={(id) => {
-              const target = applications.find((a) => a.id === id);
-              if (target) openDeleteModal(target);
-            }}
-            onStatusChange={handleStatusChange}
-          />
-        )}
+        {/* View Area (Desktop isolated item scroll / Mobile page content scroll under fixed header) */}
+        <div className="flex-1 min-h-0 flex flex-col">
+          {currentView === 'grid' && (
+            <GridView
+              applications={applications}
+              loading={isAppsLoading}
+              onEdit={openEditModal}
+              onDelete={(id) => {
+                const target = applications.find((a) => a.id === id);
+                if (target) openDeleteModal(target);
+              }}
+              onStatusChange={handleStatusChange}
+            />
+          )}
 
-        {currentView === 'analytics' && (
-          <AnalyticsView analytics={analytics} loading={isAnalyticsLoading} />
-        )}
+          {currentView === 'kanban' && (
+            <KanbanView
+              applications={applications}
+              loading={isAppsLoading}
+              onEdit={openEditModal}
+              onDelete={(id) => {
+                const target = applications.find((a) => a.id === id);
+                if (target) openDeleteModal(target);
+              }}
+              onStatusChange={handleStatusChange}
+            />
+          )}
+
+          {currentView === 'analytics' && (
+            <div className="flex-1 overflow-y-auto min-h-0">
+              <AnalyticsView analytics={analytics} loading={isAnalyticsLoading} />
+            </div>
+          )}
+        </div>
 
       </main>
 
@@ -182,6 +233,18 @@ const MainTrackerApp: React.FC<{ user: User; onLogout: () => void; onRefreshUser
         user={user}
         onClose={closeEditProfileModal}
         onSuccess={onRefreshUser}
+      />
+
+      <GmailModal
+        isOpen={isGmailModalOpen}
+        onClose={closeGmailModal}
+        onSuccessRefresh={handleGlobalRefresh}
+      />
+
+      <EmailReviewModal
+        isOpen={isReviewModalOpen}
+        onClose={closeReviewModal}
+        onSuccessRefresh={handleGlobalRefresh}
       />
 
       <ConfirmDeleteModal

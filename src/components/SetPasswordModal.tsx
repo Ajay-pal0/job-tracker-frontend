@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Lock, AlertCircle, CheckCircle2, X } from 'lucide-react';
 import { applicationService } from '../services/applicationService';
+import { useLockBodyScroll } from '../hooks/useLockBodyScroll';
 import type { User } from '../types';
 
 interface SetPasswordModalProps {
@@ -16,6 +17,8 @@ export const SetPasswordModal: React.FC<SetPasswordModalProps> = ({
   onClose,
   onSuccess,
 }) => {
+  useLockBodyScroll(isOpen);
+
   const [oldPassword, setOldPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');

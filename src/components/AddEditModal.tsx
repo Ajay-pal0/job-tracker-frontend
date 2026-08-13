@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { X, Briefcase } from 'lucide-react';
 import type { Application, ApplicationStatus, Platform } from '../types';
+import { useLockBodyScroll } from '../hooks/useLockBodyScroll';
 
 interface AddEditModalProps {
   isOpen: boolean;
@@ -39,6 +40,8 @@ export const AddEditModal: React.FC<AddEditModalProps> = ({
   initialData,
   loading,
 }) => {
+  useLockBodyScroll(isOpen);
+
   const {
     register,
     handleSubmit,

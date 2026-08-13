@@ -8,6 +8,8 @@ export function useModals() {
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [isSetPasswordModalOpen, setIsSetPasswordModalOpen] = useState(false);
   const [isEditProfileModalOpen, setIsEditProfileModalOpen] = useState(false);
+  const [isGmailModalOpen, setIsGmailModalOpen] = useState(false);
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
 
   const openAddModal = useCallback(() => {
     setEditingApp(null);
@@ -41,6 +43,12 @@ export function useModals() {
   const openEditProfileModal = useCallback(() => setIsEditProfileModalOpen(true), []);
   const closeEditProfileModal = useCallback(() => setIsEditProfileModalOpen(false), []);
 
+  const openGmailModal = useCallback(() => setIsGmailModalOpen(true), []);
+  const closeGmailModal = useCallback(() => setIsGmailModalOpen(false), []);
+
+  const openReviewModal = useCallback(() => setIsReviewModalOpen(true), []);
+  const closeReviewModal = useCallback(() => setIsReviewModalOpen(false), []);
+
   return {
     isAddEditModalOpen,
     editingApp,
@@ -48,6 +56,8 @@ export function useModals() {
     isImportModalOpen,
     isSetPasswordModalOpen,
     isEditProfileModalOpen,
+    isGmailModalOpen,
+    isReviewModalOpen,
     openAddModal,
     openEditModal,
     closeAddEditModal,
@@ -59,5 +69,10 @@ export function useModals() {
     closeSetPasswordModal,
     openEditProfileModal,
     closeEditProfileModal,
+    openGmailModal,
+    closeGmailModal,
+    openReviewModal,
+    closeReviewModal,
   };
 }
+

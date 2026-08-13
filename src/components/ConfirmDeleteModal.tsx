@@ -1,6 +1,7 @@
 import React from 'react';
 import { AlertTriangle, Trash2 } from 'lucide-react';
 import type { Application } from '../types';
+import { useLockBodyScroll } from '../hooks/useLockBodyScroll';
 
 interface ConfirmDeleteModalProps {
   isOpen: boolean;
@@ -17,6 +18,8 @@ export const ConfirmDeleteModal: React.FC<ConfirmDeleteModalProps> = ({
   onClose,
   onConfirm,
 }) => {
+  useLockBodyScroll(isOpen);
+
   if (!isOpen) return null;
 
   return (

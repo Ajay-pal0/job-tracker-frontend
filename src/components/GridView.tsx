@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   ExternalLink,
   Edit2,
@@ -15,7 +15,10 @@ import {
   FileText,
   X,
   Copy,
-  Check
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  ChevronDown,
 } from 'lucide-react';
 import type { Application, ApplicationStatus } from '../types';
 
@@ -59,9 +62,49 @@ export const GridView: React.FC<GridViewProps> = ({
   const [selectedNoteApp, setSelectedNoteApp] = useState<Application | null>(null);
   const [copied, setCopied] = useState(false);
 
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [mobileVisibleCount, setMobileVisibleCount] = useState(10);
+  const mobileSentinelRef = useRef<HTMLDivElement | null>(null);
+
+  // Reset pagination when applications change
+  useEffect(() => {
+    setCurrentPage(1);
+    setMobileVisibleCount(10);
+  }, [applications.length]);
+
+  // Mobile Infinite Scroll Observer
+  useEffect(() => {
+    const sentinel = mobileSentinelRef.current;
+    if (!sentinel) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setMobileVisibleCount((prev) => {
+            if (prev < applications.length) {
+              return Math.min(prev + 10, applications.length);
+            }
+            return prev;
+          });
+        }
+      },
+      { rootMargin: '100px' }
+    );
+
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [applications.length]);
+
+  const totalPages = Math.max(1, Math.ceil(applications.length / itemsPerPage));
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const desktopPaginatedApps = applications.slice(startIndex, startIndex + itemsPerPage);
+  const mobileVisibleApps = applications.slice(0, mobileVisibleCount);
+
   if (loading) {
     return (
-      <div className="mb-6 space-y-4 w-full">
+      <div className="mb-6 space-y-4 w-full min-h-[calc(100vh-280px)] flex flex-col">
         {/* Mobile Skeleton Cards */}
         <div className="block md:hidden space-y-3">
           {[1, 2, 3, 4].map((n) => (
@@ -84,8 +127,8 @@ export const GridView: React.FC<GridViewProps> = ({
         </div>
 
         {/* Desktop Skeleton Table */}
-        <div className="hidden md:block bg-white rounded-2xl border border-[#E2E8F0] shadow-[0_1px_2px_rgba(0,0,0,0.05)] w-full overflow-hidden">
-          <div className="overflow-x-auto w-full">
+        <div className="hidden md:flex flex-col flex-1 bg-white rounded-2xl border border-[#E2E8F0] shadow-[0_1px_2px_rgba(0,0,0,0.05)] w-full overflow-hidden min-h-[400px]">
+          <div className="overflow-x-auto w-full flex-1">
             <table className="w-full text-left border-collapse table-auto">
               <thead>
                 <tr className="bg-[#F8FAFC] border-b border-[#E2E8F0] text-[11px] font-bold text-[#64748B] uppercase tracking-wider">
@@ -130,7 +173,7 @@ export const GridView: React.FC<GridViewProps> = ({
 
   if (applications.length === 0) {
     return (
-      <div className="bg-white rounded-2xl p-8 sm:p-12 text-center border border-[#E2E8F0] shadow-[0_1px_2px_rgba(0,0,0,0.05)] my-6">
+      <div className="bg-white rounded-2xl p-8 sm:p-12 text-center border border-[#E2E8F0] shadow-[0_1px_2px_rgba(0,0,0,0.05)] my-2 min-h-[calc(100vh-280px)] flex flex-col items-center justify-center">
         <Building className="w-12 h-12 text-[#94A3B8] mx-auto mb-3" />
         <h3 className="text-base font-bold text-[#0F172A]">No Job Applications Found</h3>
         <p className="text-xs text-[#64748B] max-w-md mx-auto mt-1">
@@ -141,11 +184,11 @@ export const GridView: React.FC<GridViewProps> = ({
   }
 
   return (
-    <div className="mb-6 space-y-4 w-full">
+    <div className="flex-1 min-h-0 flex flex-col justify-between w-full overflow-hidden">
       
       {/* Mobile Card List View (Visible on small screens) */}
-      <div className="block md:hidden space-y-3">
-        {applications.map((app, index) => {
+      <div className="block md:hidden flex-1 overflow-y-auto space-y-3 min-h-0 pr-1">
+        {mobileVisibleApps.map((app, index) => {
           const statusStyle = STATUS_COLORS[app.status] || STATUS_COLORS.Applied;
           return (
             <div
@@ -201,49 +244,52 @@ export const GridView: React.FC<GridViewProps> = ({
                 <select
                   value={app.status}
                   onChange={(e) => onStatusChange(app.id, e.target.value as ApplicationStatus)}
-                  className={`text-xs font-bold px-3 py-1 rounded-full border ${statusStyle.bg} ${statusStyle.text} ${statusStyle.border} focus:outline-none cursor-pointer max-w-[180px] sm:max-w-none truncate`}
+                  className={`text-xs font-bold px-2.5 py-1 rounded-lg border cursor-pointer focus:outline-none transition-all ${statusStyle.bg} ${statusStyle.text} ${statusStyle.border}`}
                 >
                   {ALL_STATUSES.map((st) => (
-                    <option key={st} value={st} className="bg-white text-[#0F172A] font-medium">
+                    <option key={st} value={st}>
                       {st}
                     </option>
                   ))}
                 </select>
               </div>
 
-              {/* Badges: Salary, Location, Contact */}
-              <div className="flex flex-wrap items-center gap-2 text-xs text-[#64748B] pt-1">
-                {app.salary && (
-                  <span className="inline-block bg-[#ECFDF5] text-[#047857] border border-[#A7F3D0] px-2.5 py-0.5 rounded-full text-[11px] font-bold">
-                    {app.salary}
-                  </span>
-                )}
-                {app.location && (
-                  <span className="inline-flex items-center space-x-1 bg-[#F8FAFC] border border-[#E2E8F0] px-2.5 py-0.5 rounded-lg text-[11px] font-medium max-w-full">
-                    <MapPin className="w-3 h-3 text-[#94A3B8] shrink-0" />
+              {/* Details Grid */}
+              <div className="grid grid-cols-2 gap-2 text-xs pt-1 border-t border-[#E2E8F0]">
+                {app.salary ? (
+                  <div className="flex items-center space-x-1.5 text-[#334155]">
+                    <DollarSign className="w-3.5 h-3.5 text-[#10B981] shrink-0" />
+                    <span className="font-semibold">{app.salary}</span>
+                  </div>
+                ) : null}
+
+                {app.location ? (
+                  <div className="flex items-center space-x-1.5 text-[#64748B]">
+                    <MapPin className="w-3.5 h-3.5 text-[#94A3B8] shrink-0" />
                     <span className="truncate">{app.location}</span>
-                  </span>
-                )}
-                {app.recruiter_name && (
-                  <span className="inline-flex items-center space-x-1 text-[11px] text-[#334155] font-medium max-w-full">
-                    <UserCheck className="w-3 h-3 text-[#4F46E5] shrink-0" />
-                    <span className="truncate">{app.recruiter_name}</span>
-                  </span>
-                )}
+                  </div>
+                ) : null}
+
+                {app.recruiter_name ? (
+                  <div className="flex items-center space-x-1.5 text-[#334155] col-span-2">
+                    <UserCheck className="w-3.5 h-3.5 text-[#4F46E5] shrink-0" />
+                    <span className="font-medium truncate">Recruiter: {app.recruiter_name}</span>
+                  </div>
+                ) : null}
               </div>
 
-              {/* Notes section if available */}
-              {app.notes && app.notes.trim() ? (
+              {/* Notes Snippet */}
+              {app.notes ? (
                 <div
                   onClick={() => setSelectedNoteApp(app)}
-                  className="bg-slate-50 hover:bg-indigo-50/50 border border-slate-200/80 hover:border-indigo-200 rounded-xl p-2.5 text-xs text-[#334155] space-y-1 cursor-pointer transition-colors"
+                  className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl p-2.5 space-y-1 cursor-pointer hover:bg-indigo-50/50 hover:border-indigo-200 transition-colors"
                 >
-                  <div className="flex items-center justify-between font-bold text-[#64748B] text-[11px]">
-                    <div className="flex items-center space-x-1.5">
-                      <FileText className="w-3.5 h-3.5 text-[#4F46E5] shrink-0" />
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-bold text-[#64748B] uppercase tracking-wider flex items-center space-x-1">
+                      <FileText className="w-3 h-3 text-[#4F46E5]" />
                       <span>Notes</span>
-                    </div>
-                    <span className="text-[10px] text-indigo-600 font-semibold">Tap to view</span>
+                    </span>
+                    <span className="text-[10px] text-[#4F46E5] font-semibold">Tap to view</span>
                   </div>
                   <p className="text-xs leading-relaxed text-[#334155] font-normal line-clamp-3" title={app.notes}>
                     {app.notes}
@@ -272,13 +318,35 @@ export const GridView: React.FC<GridViewProps> = ({
             </div>
           );
         })}
+
+        {/* Mobile Scrollable Pagination / Load More Footer */}
+        <div className="pt-2">
+          <div className="flex flex-col items-center justify-center space-y-2.5 p-4 bg-white rounded-2xl border border-[#E2E8F0] text-center shadow-2xs">
+            <span className="text-xs font-semibold text-[#64748B]">
+              Showing <strong className="text-[#0F172A]">{mobileVisibleApps.length}</strong> of{' '}
+              <strong className="text-[#0F172A]">{applications.length}</strong> applications
+            </span>
+
+            {mobileVisibleApps.length < applications.length && (
+              <button
+                type="button"
+                onClick={() => setMobileVisibleCount((c) => Math.min(c + 10, applications.length))}
+                className="w-full bg-[#F1F5F9] hover:bg-indigo-50 text-[#4F46E5] font-bold text-xs py-2.5 px-4 rounded-xl border border-[#E2E8F0] transition-all cursor-pointer flex items-center justify-center space-x-1.5 shadow-2xs"
+              >
+                <ChevronDown className="w-4 h-4" />
+                <span>Load More Applications ({applications.length - mobileVisibleApps.length} remaining)</span>
+              </button>
+            )}
+          </div>
+          <div ref={mobileSentinelRef} className="h-4 w-full"></div>
+        </div>
       </div>
 
       {/* Desktop & Tablet Widescreen Table View (Hidden on mobile) */}
-      <div className="hidden md:block bg-white rounded-2xl border border-[#E2E8F0] shadow-[0_1px_2px_rgba(0,0,0,0.05)] w-full">
-        <div className="overflow-x-auto w-full pb-8">
+      <div className="hidden md:flex flex-col flex-1 min-h-0 bg-white rounded-2xl border border-[#E2E8F0] shadow-[0_1px_2px_rgba(0,0,0,0.05)] w-full overflow-hidden">
+        <div className="overflow-x-auto overflow-y-auto flex-1 w-full min-h-0 pb-2">
           <table className="w-full text-left border-collapse table-auto">
-            <thead>
+            <thead className="sticky top-0 bg-[#F8FAFC] z-10 shadow-2xs border-b border-[#E2E8F0]">
               <tr className="bg-[#F8FAFC] border-b border-[#E2E8F0] text-[11px] font-bold text-[#64748B] uppercase tracking-wider">
                 <th className="py-4 px-3 w-10 text-center rounded-tl-2xl">#</th>
 
@@ -357,7 +425,7 @@ export const GridView: React.FC<GridViewProps> = ({
             </thead>
 
             <tbody className="divide-y divide-[#E2E8F0] text-xs sm:text-sm text-[#334155]">
-              {applications.map((app, index) => {
+              {desktopPaginatedApps.map((app, index) => {
                 const statusStyle = STATUS_COLORS[app.status] || STATUS_COLORS.Applied;
                 const recruiterInitial = app.recruiter_name ? app.recruiter_name.trim().charAt(0).toUpperCase() : '';
                 const isTopRow = index < 2;
@@ -369,7 +437,7 @@ export const GridView: React.FC<GridViewProps> = ({
                   >
                     {/* Index */}
                     <td className="py-4 px-3 text-[#94A3B8] font-bold text-center text-xs">
-                      {index + 1}
+                      {startIndex + index + 1}
                     </td>
 
                     {/* Company */}
@@ -549,6 +617,75 @@ export const GridView: React.FC<GridViewProps> = ({
               })}
             </tbody>
           </table>
+        </div>
+      </div>
+
+      {/* Desktop Page Count & Pagination Controls */}
+      <div className="hidden md:flex items-center justify-between bg-white px-6 py-3.5 border border-[#E2E8F0] rounded-2xl shadow-2xs mt-3 shrink-0">
+        {/* Count Info & Per Page selector */}
+        <div className="flex items-center space-x-4">
+          <span className="text-xs font-semibold text-[#64748B]">
+            Showing <strong className="text-[#0F172A]">{applications.length > 0 ? startIndex + 1 : 0}</strong> to{' '}
+            <strong className="text-[#0F172A]">{Math.min(startIndex + itemsPerPage, applications.length)}</strong> of{' '}
+            <strong className="text-[#0F172A]">{applications.length}</strong> applications
+          </span>
+
+          <div className="flex items-center space-x-1.5 text-xs text-[#64748B]">
+            <span>Per page:</span>
+            <select
+              value={itemsPerPage}
+              onChange={(e) => {
+                setItemsPerPage(Number(e.target.value));
+                setCurrentPage(1);
+              }}
+              className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg px-2.5 py-1 text-xs font-bold text-[#0F172A] focus:outline-none focus:border-[#4F46E5] cursor-pointer"
+            >
+              <option value={10}>10</option>
+              <option value={25}>25</option>
+              <option value={50}>50</option>
+              <option value={100}>100</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Pagination Buttons */}
+        <div className="flex items-center space-x-1.5">
+          <button
+            type="button"
+            onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+            disabled={currentPage === 1}
+            className="px-3 py-1.5 rounded-xl border border-[#E2E8F0] text-xs font-semibold text-[#334155] hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors flex items-center space-x-1"
+          >
+            <ChevronLeft className="w-4 h-4" />
+            <span>Previous</span>
+          </button>
+
+          <div className="flex items-center space-x-1">
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+              <button
+                key={page}
+                type="button"
+                onClick={() => setCurrentPage(page)}
+                className={`w-8 h-8 rounded-xl text-xs font-extrabold transition-all cursor-pointer ${
+                  currentPage === page
+                    ? 'bg-[#4F46E5] text-white shadow-xs'
+                    : 'text-[#64748B] hover:bg-slate-100 hover:text-[#0F172A]'
+                }`}
+              >
+                {page}
+              </button>
+            ))}
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
+            disabled={currentPage === totalPages}
+            className="px-3 py-1.5 rounded-xl border border-[#E2E8F0] text-xs font-semibold text-[#334155] hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors flex items-center space-x-1"
+          >
+            <span>Next</span>
+            <ChevronRight className="w-4 h-4" />
+          </button>
         </div>
       </div>
 
