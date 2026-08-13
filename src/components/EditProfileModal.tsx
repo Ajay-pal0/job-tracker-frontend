@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { User as UserIcon, Mail, AlertCircle, CheckCircle2, X, UserCog } from 'lucide-react';
 import { applicationService } from '../services/applicationService';
+import { useLockBodyScroll } from '../hooks/useLockBodyScroll';
 import type { User } from '../types';
 
 interface EditProfileModalProps {
@@ -16,6 +17,8 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
   onClose,
   onSuccess,
 }) => {
+  useLockBodyScroll(isOpen);
+
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [username, setUsername] = useState('');

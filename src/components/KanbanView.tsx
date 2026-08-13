@@ -31,15 +31,15 @@ export const KanbanView: React.FC<KanbanViewProps> = ({
 
   if (loading) {
     return (
-      <div className="space-y-4 mb-6">
-        <div className="overflow-x-auto pb-4">
-          <div className="flex gap-4 min-w-[1200px]">
+      <div className="flex-1 min-h-0 flex flex-col w-full overflow-hidden">
+        <div className="overflow-x-auto overflow-y-hidden flex-1 min-h-0 w-full pb-2">
+          <div className="flex gap-4 min-w-[1200px] h-full">
             {KANBAN_COLUMNS.map((col) => (
               <div
                 key={col.status}
-                className="w-[280px] bg-[#F1F5F9]/70 rounded-2xl p-3 border border-[#E2E8F0] flex flex-col shrink-0 min-h-[440px] space-y-3 animate-pulse"
+                className="w-[280px] bg-[#F1F5F9]/70 rounded-2xl p-3 border border-[#E2E8F0] flex flex-col shrink-0 h-full space-y-3 animate-pulse"
               >
-                <div className="flex items-center justify-between pb-3 border-b border-[#E2E8F0] px-1">
+                <div className="flex items-center justify-between pb-3 border-b border-[#E2E8F0] px-1 shrink-0">
                   <div className="flex items-center space-x-2">
                     <span className={`w-2.5 h-2.5 rounded-full ${col.dotColor}`}></span>
                     <div className="h-4 w-24 bg-slate-200 rounded-md"></div>
@@ -87,10 +87,10 @@ export const KanbanView: React.FC<KanbanViewProps> = ({
     : KANBAN_COLUMNS.filter(col => col.status === activeMobileTab);
 
   return (
-    <div className="space-y-4 mb-6">
+    <div className="flex-1 min-h-0 flex flex-col w-full overflow-hidden">
       
       {/* Mobile Column Quick Filter Tabs */}
-      <div className="flex md:hidden items-center space-x-1.5 overflow-x-auto pb-2 no-scrollbar">
+      <div className="flex md:hidden items-center space-x-1.5 overflow-x-auto pb-2 no-scrollbar shrink-0">
         <button
           onClick={() => setActiveMobileTab('All')}
           className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-colors border ${
@@ -121,8 +121,8 @@ export const KanbanView: React.FC<KanbanViewProps> = ({
       </div>
 
       {/* Board Scroll Container */}
-      <div className="overflow-x-auto pb-4 snap-x snap-mandatory">
-        <div className="flex gap-4 min-w-full md:min-w-[1200px]">
+      <div className="overflow-x-auto overflow-y-visible md:overflow-y-hidden flex-1 min-h-0 w-full pb-2">
+        <div className="flex gap-4 min-w-full md:min-w-[1200px] min-h-[480px] md:h-full">
           {filteredColumns.map((col) => {
             const columnApps = applications.filter((app) => app.status === col.status);
             return (
@@ -130,10 +130,10 @@ export const KanbanView: React.FC<KanbanViewProps> = ({
                 key={col.status}
                 onDragOver={handleDragOver}
                 onDrop={(e) => handleDrop(e, col.status)}
-                className="w-full sm:w-[300px] md:w-[280px] bg-[#F1F5F9]/70 rounded-2xl p-3 border border-[#E2E8F0] flex flex-col shrink-0 min-h-[480px] snap-start"
+                className="w-full sm:w-[300px] md:w-[280px] bg-[#F1F5F9]/70 rounded-2xl p-3 border border-[#E2E8F0] flex flex-col shrink-0 min-h-[400px] md:h-full md:max-h-full overflow-hidden snap-start"
               >
                 {/* Column Header */}
-                <div className="flex items-center justify-between pb-3 mb-3 border-b border-[#E2E8F0] px-1">
+                <div className="flex items-center justify-between pb-3 mb-3 border-b border-[#E2E8F0] px-1 shrink-0">
                   <div className="flex items-center space-x-2">
                     <span className={`w-2.5 h-2.5 rounded-full ${col.dotColor}`}></span>
                     <h3 className="text-xs font-bold text-[#0F172A] tracking-tight">
@@ -146,9 +146,9 @@ export const KanbanView: React.FC<KanbanViewProps> = ({
                 </div>
 
                 {/* Column Cards */}
-                <div className="flex-1 space-y-3">
+                <div className="flex-1 overflow-y-auto space-y-3 pr-1 min-h-0">
                   {columnApps.length === 0 ? (
-                    <div className="border-2 border-dashed border-[#E2E8F0] rounded-xl p-6 text-center my-2">
+                    <div className="h-full border-2 border-dashed border-[#CBD5E1] rounded-xl p-6 text-center flex flex-col items-center justify-center my-auto min-h-[140px]">
                       <p className="text-[11px] font-medium text-[#94A3B8]">
                         No applications in this stage
                       </p>

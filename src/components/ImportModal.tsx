@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { X, Upload, FileSpreadsheet, CheckCircle2, AlertTriangle, AlertCircle, RefreshCw, Download } from 'lucide-react';
 import type { ImportResult } from '../types';
+import { useLockBodyScroll } from '../hooks/useLockBodyScroll';
 
 interface ImportModalProps {
   isOpen: boolean;
@@ -17,6 +18,8 @@ export const ImportModal: React.FC<ImportModalProps> = ({
   onDownloadSample,
   onSuccessRefresh,
 }) => {
+  useLockBodyScroll(isOpen);
+
   const [file, setFile] = useState<File | null>(null);
   const [duplicateAction, setDuplicateAction] = useState<'skip' | 'update'>('skip');
   const [loading, setLoading] = useState(false);

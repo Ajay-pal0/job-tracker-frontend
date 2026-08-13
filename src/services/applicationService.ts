@@ -5,6 +5,8 @@ import type {
   AnalyticsData,
   ImportResult,
   User,
+  GmailStatusResponse,
+  GmailSyncResponse,
 } from '../types';
 
 export interface ApplicationFilterParams {
@@ -131,5 +133,60 @@ export const applicationService = {
     const response = await api.post('/accounts/reset-password/', data);
     return response.data;
   },
+
+  // Gmail Integration
+  async getGmailAuthUrl(redirectUri?: string): Promise<{ auth_url: string }> {
+    const response = await api.get('/applications/gmail/auth-url/', {
+      params: redirectUri ? { redirect_uri: redirectUri } : {},
+    });
+    return response.data;
+  },
+
+  async connectGmail(data: { access_token?: string; refresh_token?: string; email_address?: string; client_id?: string; client_secret?: string; code?: string; redirect_uri?: string }): Promise<GmailStatusResponse> {
+    const response = await api.post('/applications/gmail/connect/', data);
+    return response.data;
+  },
+
+  async getGmailStatus(): Promise<GmailStatusResponse> {
+    const response = await api.get('/applications/gmail/status/');
+    return response.data;
+  },
+
+  async syncGmail(mockEmails?: any[]): Promise<GmailSyncResponse> {
+    const response = await api.post('/applications/gmail/sync/', { mock_emails: mockEmails });
+    return response.data;
+  },
+
+  async disconnectGmail(): Promise<GmailStatusResponse> {
+    const response = await api.post('/applications/gmail/disconnect/');
+    return response.data;
+  },
+
+  // Gmail Messages & Review Approval
+  async getGmailMessages(params?: { status?: string; search?: string; page?: number; page_size?: number }): Promise<import('../types').EmailMessageListResponse> {
+    const response = await api.get('/applications/gmail/messages/', { params });
+    return response.data;
+  },
+
+  async approveGmailEmail(id: number, overrides?: Record<string, any>) {
+    const response = await api.post(`/applications/gmail/emails/${id}/approve/`, overrides || {});
+    return response.data;
+  },
+
+  async bulkApproveGmailEmails(ids: number[]) {
+    const response = await api.post('/applications/gmail/emails/bulk-approve/', { email_ids: ids });
+    return response.data;
+  },
+
+  async ignoreGmailEmail(id: number) {
+    const response = await api.post(`/applications/gmail/emails/${id}/ignore/`);
+    return response.data;
+  },
+
+  async bulkIgnoreGmailEmails(ids: number[]) {
+    const response = await api.post('/applications/gmail/emails/bulk-ignore/', { email_ids: ids });
+    return response.data;
+  },
 };
+
 

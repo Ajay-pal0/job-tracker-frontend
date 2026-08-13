@@ -12,6 +12,7 @@ interface FilterBarProps {
   onSortChange: (val: string) => void;
   onImportClick: () => void;
   onExportClick: () => void;
+  onGmailClick?: () => void;
 }
 
 const STATUSES: string[] = [
@@ -119,7 +120,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({
             className="w-full sm:w-auto flex items-center justify-center space-x-1.5 bg-[#F1F5F9] hover:bg-slate-200/80 text-[#334155] px-3 py-2 rounded-xl text-xs font-semibold border border-[#E2E8F0] transition-colors cursor-pointer"
           >
             <Upload className="w-3.5 h-3.5 text-[#64748B] shrink-0" />
-            <span className="truncate">Import Excel</span>
+            <span className="truncate">Import</span>
           </button>
 
           <button
@@ -127,7 +128,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({
             className="w-full sm:w-auto flex items-center justify-center space-x-1.5 bg-[#ECFDF5] hover:bg-emerald-100 text-[#047857] px-3 py-2 rounded-xl text-xs font-semibold border border-[#A7F3D0] transition-colors cursor-pointer"
           >
             <Download className="w-3.5 h-3.5 text-[#047857] shrink-0" />
-            <span className="truncate">Export Excel</span>
+            <span className="truncate">Export</span>
           </button>
         </div>
 
@@ -136,3 +137,4 @@ export const FilterBar: React.FC<FilterBarProps> = ({
     </div>
   );
 };
+
