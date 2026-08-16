@@ -1,6 +1,16 @@
 # Job Application Tracker - React Frontend
 
-Standalone React + TypeScript + Vite + Tailwind CSS frontend for the Job Application Tracker with Grid & Kanban Board views, CSV/Excel import, Excel export, and automated GitHub Pages deployment.
+Standalone React + TypeScript + Vite + Tailwind CSS frontend for the Job Application Tracker featuring automated Gmail syncing, interactive Email Review Queue, Grid & Kanban Board views, CSV/Excel import, Excel export, and automated GitHub Pages deployment.
+
+---
+
+## Features
+
+- 📊 **Interactive Dashboard & Analytics**: High-level metrics for total applications, pending review count, interviews, offers, and conversion rates.
+- 📧 **Automated Gmail Sync & Review Queue**: Connect Gmail via OAuth2, sync job-related emails asynchronously in Celery, preview extracted fields, and approve/ignore emails before adding to your tracker.
+- 📋 **Kanban Board & List Views**: Easily toggle between Kanban drag-and-drop pipeline and structured data table view.
+- 🔍 **Advanced Search & Filtering**: Instant filter by status (Applied, Interviewing, Offer, etc.), platform (LinkedIn, Indeed, etc.), and keyword search.
+- 📥 **CSV & Excel Import/Export**: Bulk import job application history and export tracking data to Excel.
 
 ---
 
@@ -19,7 +29,7 @@ Standalone React + TypeScript + Vite + Tailwind CSS frontend for the Job Applica
 To push this frontend directory as its own independent GitHub repository:
 
 ```bash
-cd frontend
+cd job-tracker-frontend
 git init
 git add .
 git commit -m "Initial commit: Job Application Tracker Frontend"
@@ -52,7 +62,7 @@ By default, Vite proxies `/api` requests to `http://127.0.0.1:8000` (Django back
    - Go to **Settings** > **Pages**.
    - Under **Source**, select **Deploy from a branch**.
    - Choose `gh-pages` branch and `/ (root)`.
-3. (Optional) Set your backend API URL in **Settings** > **Secrets and variables** > **Actions** > **Repository secret**:
+3. Set your backend API URL in **Settings** > **Secrets and variables** > **Actions** > **Repository secret**:
    - Name: `VITE_API_URL`
    - Value: `https://your-backend-api.com/api`
 
@@ -76,3 +86,4 @@ docker build --build-arg VITE_API_URL=https://your-backend-api.com/api -t job-tr
 # Run container on port 80
 docker run -p 80:80 job-tracker-frontend
 ```
+
