@@ -100,6 +100,11 @@ export const GmailModal: React.FC<GmailModalProps> = ({
       setSyncResult(res);
       onSuccessRefresh();
       fetchStatus();
+
+      // Auto-close modal after 2.5 seconds to give smooth feedback
+      setTimeout(() => {
+        onClose();
+      }, 2500);
     } catch (err: any) {
       setErrorMsg(err.response?.data?.error || 'Failed to sync Gmail applications.');
     } finally {
@@ -197,7 +202,7 @@ export const GmailModal: React.FC<GmailModalProps> = ({
                 className="w-full sm:flex-1 bg-[#4F46E5] hover:bg-[#4338CA] disabled:opacity-50 text-white font-semibold text-xs py-2.5 px-4 rounded-xl flex items-center justify-center space-x-1.5 transition-all cursor-pointer shadow-sm"
               >
                 <RefreshCw className={`w-3.5 h-3.5 ${syncLoading ? 'animate-spin' : ''}`} />
-                <span>{syncLoading ? 'Scanning Gmail...' : 'Sync Applications Now'}</span>
+                <span>{syncLoading ? 'Initiating Sync...' : 'Sync Applications Now'}</span>
               </button>
 
               <button
@@ -269,33 +274,39 @@ export const GmailModal: React.FC<GmailModalProps> = ({
 
           {/* Sync Results Summary */}
           {syncResult && (
-            <div className="bg-[#ECFDF5] border border-[#A7F3D0] rounded-xl p-4 text-[#047857] space-y-3 animate-in fade-in duration-150">
-              <div className="flex items-center space-x-2 font-bold text-xs text-[#047857]">
-                <CheckCircle2 className="w-4 h-4 text-[#10B981]" />
-                <span>Sync Summary</span>
+            <div className="bg-[#EEF2FF] border border-[#C7D2FE] rounded-xl p-4 text-[#3730A3] space-y-2.5 animate-in fade-in duration-150">
+              <div className="flex items-center space-x-2 font-bold text-xs text-[#4338CA]">
+                <CheckCircle2 className="w-4 h-4 text-[#6366F1]" />
+                <span>{syncResult.status === 'STARTED' ? 'Background Sync Started' : 'Sync Summary'}</span>
               </div>
 
-              <div className="grid grid-cols-3 gap-2 text-center text-xs font-semibold">
-                <div className="bg-white/80 p-2 rounded-lg border border-[#A7F3D0]">
-                  <span className="block text-sm font-extrabold text-[#0F172A]">{syncResult.details.scanned_emails_count}</span>
-                  <span className="text-[10px] text-[#64748B] uppercase">Scanned</span>
-                </div>
-                <div className="bg-white/80 p-2 rounded-lg border border-[#A7F3D0]">
-                  <span className="block text-sm font-extrabold text-[#047857]">{syncResult.details.created_count}</span>
-                  <span className="text-[10px] text-[#047857] uppercase">Created</span>
-                </div>
-                <div className="bg-white/80 p-2 rounded-lg border border-[#A7F3D0]">
-                  <span className="block text-sm font-extrabold text-[#4F46E5]">{syncResult.details.updated_count}</span>
-                  <span className="text-[10px] text-[#4F46E5] uppercase">Updated</span>
-                </div>
-              </div>
+              <p className="text-xs text-[#3730A3] font-medium leading-relaxed">
+                {syncResult.message || 'Gmail sync process started in the background. New job emails will appear in your review queue shortly.'}
+              </p>
 
-              {syncResult.details.processed_applications.length > 0 && (
+              {syncResult.details && (syncResult.details.scanned_emails_count || 0) > 0 && (
+                <div className="grid grid-cols-3 gap-2 text-center text-xs font-semibold pt-1">
+                  <div className="bg-white/80 p-2 rounded-lg border border-[#C7D2FE]">
+                    <span className="block text-sm font-extrabold text-[#0F172A]">{syncResult.details.scanned_emails_count || 0}</span>
+                    <span className="text-[10px] text-[#64748B] uppercase">Scanned</span>
+                  </div>
+                  <div className="bg-white/80 p-2 rounded-lg border border-[#C7D2FE]">
+                    <span className="block text-sm font-extrabold text-[#047857]">{syncResult.details.created_count || 0}</span>
+                    <span className="text-[10px] text-[#047857] uppercase">Created</span>
+                  </div>
+                  <div className="bg-white/80 p-2 rounded-lg border border-[#C7D2FE]">
+                    <span className="block text-sm font-extrabold text-[#4F46E5]">{syncResult.details.updated_count || 0}</span>
+                    <span className="text-[10px] text-[#4F46E5] uppercase">Updated</span>
+                  </div>
+                </div>
+              )}
+
+              {syncResult.details?.processed_applications && syncResult.details.processed_applications.length > 0 && (
                 <div className="pt-1 space-y-1">
                   <span className="text-[11px] font-bold text-[#0F172A] block">Extracted Applications:</span>
                   <div className="max-h-32 overflow-y-auto space-y-1 text-xs">
                     {syncResult.details.processed_applications.map((app, idx) => (
-                      <div key={idx} className="bg-white px-3 py-1.5 rounded-md border border-[#A7F3D0] flex items-center justify-between">
+                      <div key={idx} className="bg-white px-3 py-1.5 rounded-md border border-[#C7D2FE] flex items-center justify-between">
                         <span className="font-bold text-[#0F172A]">{app.company_name}</span>
                         <span className="text-[#64748B] truncate max-w-[130px]">{app.job_title}</span>
                         <span className="px-2 py-0.5 bg-[#F1F5F9] text-[#334155] rounded text-[10px] font-bold">{app.status}</span>

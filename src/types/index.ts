@@ -104,12 +104,14 @@ export interface GmailStatusResponse {
 
 export interface GmailSyncResponse {
   message: string;
-  details: {
-    scanned_emails_count: number;
-    created_count: number;
-    updated_count: number;
-    skipped_count: number;
-    processed_applications: Array<{
+  status?: string;
+  details?: {
+    scanned_emails_count?: number;
+    created_count?: number;
+    updated_count?: number;
+    skipped_count?: number;
+    pending_review_count?: number;
+    processed_applications?: Array<{
       id: string;
       company_name: string;
       job_title: string;
