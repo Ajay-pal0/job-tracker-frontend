@@ -97,6 +97,8 @@ export interface AuthState {
 export interface GmailStatusResponse {
   connected: boolean;
   email_address?: string;
+  sync_status?: 'IDLE' | 'IN_PROGRESS' | 'SUCCESS' | 'FAILED';
+  sync_started_at?: string;
   last_synced_at?: string;
   created_at?: string;
   message?: string;

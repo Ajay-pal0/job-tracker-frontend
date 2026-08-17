@@ -38,6 +38,28 @@ export const GmailModal: React.FC<GmailModalProps> = ({
     }
   }, [isOpen]);
 
+  // Poll status while background sync is active
+  useEffect(() => {
+    let intervalId: any;
+    if (isOpen && gmailStatus?.sync_status === 'IN_PROGRESS') {
+      intervalId = setInterval(async () => {
+        try {
+          const res = await applicationService.getGmailStatus();
+          setGmailStatus(res);
+          if (res.sync_status !== 'IN_PROGRESS') {
+            onSuccessRefresh();
+            if (intervalId) clearInterval(intervalId);
+          }
+        } catch {
+          // Ignore transient polling errors
+        }
+      }, 3000);
+    }
+    return () => {
+      if (intervalId) clearInterval(intervalId);
+    };
+  }, [isOpen, gmailStatus?.sync_status, onSuccessRefresh]);
+
   const fetchStatus = async () => {
     setStatusLoading(true);
     setErrorMsg(null);
@@ -106,7 +128,7 @@ export const GmailModal: React.FC<GmailModalProps> = ({
         onClose();
       }, 2500);
     } catch (err: any) {
-      setErrorMsg(err.response?.data?.error || 'Failed to sync Gmail applications.');
+      setErrorMsg(err.response?.data?.error || err.response?.data?.message || 'Failed to sync Gmail applications.');
     } finally {
       setSyncLoading(false);
     }
@@ -160,6 +182,19 @@ export const GmailModal: React.FC<GmailModalProps> = ({
           </div>
         )}
 
+        {/* Active Sync Task Running Banner */}
+        {gmailStatus?.sync_status === 'IN_PROGRESS' && !syncResult && (
+          <div className="mb-4 bg-amber-50 border border-amber-200 rounded-xl p-3.5 text-amber-900 space-y-1.5 animate-pulse duration-1000">
+            <div className="flex items-center space-x-2 font-bold text-xs text-amber-800">
+              <RefreshCw className="w-4 h-4 text-amber-600 animate-spin" />
+              <span>Sync Task Currently Running</span>
+            </div>
+            <p className="text-xs text-amber-800 font-medium leading-relaxed">
+              A background Gmail sync is actively scanning your inbox for job application emails. Additional manual syncs are disabled until this run completes.
+            </p>
+          </div>
+        )}
+
         {/* Connection Status Card */}
         <div className="space-y-4">
           <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl p-4 space-y-3">
@@ -168,10 +203,17 @@ export const GmailModal: React.FC<GmailModalProps> = ({
               {statusLoading ? (
                 <RefreshCw className="w-3.5 h-3.5 text-[#4F46E5] animate-spin" />
               ) : gmailStatus?.connected ? (
-                <span className="inline-flex items-center space-x-1 px-2.5 py-0.5 bg-[#10B981] text-white rounded-md text-[10px] font-bold">
-                  <CheckCircle2 className="w-3 h-3" />
-                  <span>Connected</span>
-                </span>
+                gmailStatus?.sync_status === 'IN_PROGRESS' ? (
+                  <span className="inline-flex items-center space-x-1 px-2.5 py-0.5 bg-amber-500 text-white rounded-md text-[10px] font-bold animate-pulse">
+                    <RefreshCw className="w-3 h-3 animate-spin" />
+                    <span>Sync In Progress...</span>
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center space-x-1 px-2.5 py-0.5 bg-[#10B981] text-white rounded-md text-[10px] font-bold">
+                    <CheckCircle2 className="w-3 h-3" />
+                    <span>Connected</span>
+                  </span>
+                )
               ) : (
                 <span className="inline-flex items-center space-x-1 px-2.5 py-0.5 bg-slate-200 text-[#334155] rounded-md text-[10px] font-bold">
                   <span>Not Connected</span>
@@ -198,11 +240,17 @@ export const GmailModal: React.FC<GmailModalProps> = ({
             <div className="flex flex-col sm:flex-row items-center gap-2 pt-1">
               <button
                 onClick={handleSync}
-                disabled={syncLoading}
-                className="w-full sm:flex-1 bg-[#4F46E5] hover:bg-[#4338CA] disabled:opacity-50 text-white font-semibold text-xs py-2.5 px-4 rounded-xl flex items-center justify-center space-x-1.5 transition-all cursor-pointer shadow-sm"
+                disabled={syncLoading || gmailStatus?.sync_status === 'IN_PROGRESS'}
+                className="w-full sm:flex-1 bg-[#4F46E5] hover:bg-[#4338CA] disabled:opacity-60 text-white font-semibold text-xs py-2.5 px-4 rounded-xl flex items-center justify-center space-x-1.5 transition-all cursor-pointer shadow-sm"
               >
-                <RefreshCw className={`w-3.5 h-3.5 ${syncLoading ? 'animate-spin' : ''}`} />
-                <span>{syncLoading ? 'Initiating Sync...' : 'Sync Applications Now'}</span>
+                <RefreshCw className={`w-3.5 h-3.5 ${syncLoading || gmailStatus?.sync_status === 'IN_PROGRESS' ? 'animate-spin' : ''}`} />
+                <span>
+                  {syncLoading
+                    ? 'Initiating Sync...'
+                    : gmailStatus?.sync_status === 'IN_PROGRESS'
+                    ? 'Sync Currently Running...'
+                    : 'Sync Applications Now'}
+                </span>
               </button>
 
               <button
