@@ -10,7 +10,7 @@ interface AnalyticsViewProps {
 export const AnalyticsView: React.FC<AnalyticsViewProps> = ({ analytics, loading }) => {
   if (loading) {
     return (
-      <div className="space-y-6 mb-6">
+      <div className="space-y-6 min-h-[calc(100dvh-220px)] md:min-h-0 pb-12">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {[1, 2].map((card) => (
             <div key={card} className="bg-white rounded-2xl p-6 border border-[#E2E8F0] shadow-2xs space-y-4 animate-pulse">
@@ -44,7 +44,7 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({ analytics, loading
   if (!analytics) return null;
 
   return (
-    <div className="space-y-6 mb-6">
+    <div className="space-y-6 min-h-[calc(100dvh-220px)] md:min-h-0 pb-12">
       
       {/* Top 2 Breakdown Cards */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
