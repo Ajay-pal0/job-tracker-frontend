@@ -120,6 +120,7 @@ export const GmailModal: React.FC<GmailModalProps> = ({
     try {
       const res = await applicationService.syncGmail();
       setSyncResult(res);
+      setGmailStatus((prev) => (prev ? { ...prev, sync_status: 'IN_PROGRESS' } : prev));
       onSuccessRefresh();
       fetchStatus();
 
