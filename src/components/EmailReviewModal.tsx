@@ -527,7 +527,7 @@ export const EmailReviewModal: React.FC<EmailReviewModalProps> = ({
 
                         <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-indigo-50 text-[#4F46E5] border border-indigo-100 flex items-center space-x-1">
                           <Sparkles className="w-3 h-3 text-[#4F46E5]" />
-                          <span>{Math.round((msg.confidence_score || 0.95) * 100)}% Match</span>
+                          <span>{msg.extraction_source === 'AI_LLM' ? '✨ AI Analyzed' : 'Rule Parsed'} ({Math.round((msg.confidence_score || 0.95) * 100)}%)</span>
                         </span>
 
                         <span
@@ -674,6 +674,17 @@ export const EmailReviewModal: React.FC<EmailReviewModalProps> = ({
                         </div>
 
                       </div>
+
+                      {/* AI Agent Classification Reasoning */}
+                      {msg.ai_reasoning && (
+                        <div className="mt-2.5 p-2.5 bg-indigo-50/70 border border-indigo-100 rounded-xl flex items-start space-x-2 text-[11px] text-[#4338CA]">
+                          <Sparkles className="w-3.5 h-3.5 text-[#4F46E5] shrink-0 mt-0.5" />
+                          <div>
+                            <span className="font-bold">AI Agent Analysis: </span>
+                            <span>{msg.ai_reasoning}</span>
+                          </div>
+                        </div>
+                      )}
                     </div>
 
                     {/* Email Snippet Button (Matches GridView Note Modal pattern) */}

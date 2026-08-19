@@ -139,6 +139,8 @@ export interface EmailMessageItem {
   extracted_recruiter_name: string;
   extracted_recruiter_email: string;
   confidence_score: number;
+  ai_reasoning?: string;
+  extraction_source?: 'AI_LLM' | 'REGEX_PARSER';
   processing_status: 'PENDING' | 'PENDING_REVIEW' | 'PROCESSING' | 'PROCESSED' | 'FAILED' | 'IGNORED';
   processed_at?: string;
   created_at: string;
