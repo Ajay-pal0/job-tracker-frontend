@@ -87,7 +87,7 @@ export const KanbanView: React.FC<KanbanViewProps> = ({
     : KANBAN_COLUMNS.filter(col => col.status === activeMobileTab);
 
   return (
-    <div className="flex-1 min-h-0 flex flex-col w-full overflow-hidden">
+    <div className="flex-1 min-h-0 flex flex-col w-full min-h-[calc(100dvh-220px)] md:min-h-0">
       
       {/* Mobile Column Quick Filter Tabs */}
       <div className="flex md:hidden items-center space-x-1.5 overflow-x-auto pb-2 no-scrollbar shrink-0">
@@ -121,7 +121,7 @@ export const KanbanView: React.FC<KanbanViewProps> = ({
       </div>
 
       {/* Board Scroll Container */}
-      <div className="overflow-x-auto overflow-y-visible md:overflow-y-hidden flex-1 min-h-0 w-full pb-2">
+      <div className="overflow-x-auto overflow-y-visible md:overflow-y-hidden flex-1 min-h-0 w-full pb-12">
         <div className="flex gap-4 min-w-full md:min-w-[1200px] min-h-[480px] md:h-full">
           {filteredColumns.map((col) => {
             const columnApps = applications.filter((app) => app.status === col.status);
