@@ -87,7 +87,7 @@ export const KanbanView: React.FC<KanbanViewProps> = ({
     : KANBAN_COLUMNS.filter(col => col.status === activeMobileTab);
 
   return (
-    <div className="flex-1 min-h-0 flex flex-col w-full overflow-hidden">
+    <div className="flex-1 min-h-0 flex flex-col w-full overflow-visible md:overflow-hidden">
       
       {/* Mobile Column Quick Filter Tabs */}
       <div className="flex md:hidden items-center space-x-1.5 overflow-x-auto pb-2 no-scrollbar shrink-0">

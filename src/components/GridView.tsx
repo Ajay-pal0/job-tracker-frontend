@@ -184,10 +184,10 @@ export const GridView: React.FC<GridViewProps> = ({
   }
 
   return (
-    <div className="flex-1 min-h-0 flex flex-col justify-between w-full overflow-hidden">
+    <div className="flex-1 min-h-0 flex flex-col justify-between w-full overflow-visible md:overflow-hidden">
       
       {/* Mobile Card List View (Visible on small screens) */}
-      <div className="block md:hidden flex-1 overflow-y-auto space-y-3 min-h-0 pr-1">
+      <div className="block md:hidden flex-1 space-y-3 min-h-0">
         {mobileVisibleApps.map((app, index) => {
           const statusStyle = STATUS_COLORS[app.status] || STATUS_COLORS.Applied;
           return (

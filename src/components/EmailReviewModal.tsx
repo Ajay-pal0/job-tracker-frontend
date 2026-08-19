@@ -257,7 +257,7 @@ export const EmailReviewModal: React.FC<EmailReviewModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/40 backdrop-blur-xs overflow-y-auto">
-      <div className="bg-white rounded-2xl max-w-4xl w-full p-4 sm:p-6 border border-[#E2E8F0] shadow-2xl relative my-auto h-[85vh] min-h-[540px] max-h-[90vh] flex flex-col animate-in fade-in zoom-in-95 duration-150">
+      <div className="bg-white rounded-2xl max-w-4xl w-full p-4 sm:p-6 border border-[#E2E8F0] shadow-2xl relative my-auto h-[88vh] sm:min-h-[540px] max-h-[90vh] flex flex-col animate-in fade-in zoom-in-95 duration-150">
         
         {/* Header - Consistent with GmailModal and ImportModal */}
         <div className="flex items-center justify-between pb-4 border-b border-[#E2E8F0] shrink-0">

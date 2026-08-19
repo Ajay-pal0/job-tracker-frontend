@@ -131,7 +131,7 @@ const MainTrackerApp: React.FC<{ user: User; onLogout: () => void; onRefreshUser
   };
 
   return (
-    <div className="h-screen w-full overflow-hidden bg-[#F8FAFC] text-[#1E293B] font-sans flex flex-col">
+    <div className="min-h-screen md:h-screen w-full overflow-y-auto md:overflow-hidden bg-[#F8FAFC] text-[#1E293B] font-sans flex flex-col">
       
       <Header
         currentView={currentView}
@@ -148,7 +148,7 @@ const MainTrackerApp: React.FC<{ user: User; onLogout: () => void; onRefreshUser
         pendingReviewCount={pendingReviewCount}
       />
 
-      <main className="flex-1 w-full max-w-[1720px] mx-auto px-3 sm:px-6 lg:px-8 py-3 sm:py-4 flex flex-col min-h-0 overflow-y-auto md:overflow-hidden">
+      <main className="flex-1 w-full max-w-[1720px] mx-auto px-3 sm:px-6 lg:px-8 py-3 sm:py-4 flex flex-col min-h-0">
         
         {/* Top Controls */}
         <div className="shrink-0 space-y-3 mb-3">
